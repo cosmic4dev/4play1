@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+<!--    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:icon="@drawable/order_small"
+        android:title="@string/action_settings"
+        app:showAsAction="ifRoom"/>-->
+
+    <item
+        android:id="@+id/order1"
+        android:orderInCategory="100"
+        android:title="거리순 정렬"
+        app:showAsAction="never|collapseActionView|withText"
+        />
+    <item
+        android:id="@+id/order2"
+        android:orderInCategory="100"
+        android:title="거리순"
+        app:showAsAction="never|collapseActionView|withText"
+        />
+
+</menu>

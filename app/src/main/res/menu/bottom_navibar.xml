@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    //가이드상 3개를 써야한다??
+    <item
+        android:id="@+id/mapViewItem"
+        android:icon="@drawable/baseline_map_white_18"
+        android:title="Map" />
+    <item
+        android:id="@+id/listViewItem"
+        android:icon="@drawable/baseline_list_white_18dp"
+        android:title="List" />
+
+    <item
+        android:id="@+id/testItem"
+        android:icon="@drawable/baseline_feedback_white_18dp"
+        android:title="Etc" />
+</menu>
