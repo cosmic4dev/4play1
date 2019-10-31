@@ -42,9 +42,9 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.NewsViewHolder
 //        holder.txt_content.setText( new StringBuilder(newsData.getBody().substring( 0,20 ) )
 //                .append( "...." ).toString());
 
-        holder.txt_author.setText( String.valueOf( newsList.get( position ).userId ));
-        holder.txt_title.setText( String.valueOf( newsList.get( position ).title) );
-        holder.txt_content.setText( new StringBuilder(newsList.get(position).body.substring( 0,20 ))
+        holder.txt_author.setText( String.valueOf( newsList.get( position ).getUserId() ));
+        holder.txt_title.setText( String.valueOf( newsList.get( position ).getTitle() ) );
+        holder.txt_content.setText( new StringBuilder( newsList.get( position ).getBody().substring( 0,20 ))
         .append( "...." ).toString());
 
     }

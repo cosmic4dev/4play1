@@ -37,6 +37,7 @@ import java.util.Map;
 
 import cosmic.com.mapprj.R;
 import cosmic.com.mapprj.adapter.DataAdapter;
+import cosmic.com.mapprj.contract.MainContract;
 import cosmic.com.mapprj.model.CalcuDistance;
 import cosmic.com.mapprj.model.Office;
 
@@ -61,7 +62,7 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
     private Location location;
     HashMap<String,Double>sortHashMap2;
 
-//    MainContract.presenter presenter;
+    MainContract.presenter presenter;
 
 
     @Nullable
@@ -77,45 +78,6 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
 
         return rootView;
     }
-
-/*    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate( savedInstanceState );
-        setContentView( R.layout.activity_data );
-
-        recyclerView = findViewById( R.id.recyclerView );
-        recyclerView.setHasFixedSize( true );
-
-
-//        sortListDistance();
-        getFireBaseDataAndSetRecyclerView();
-        setSortList(sortHashMap);
-
-//        bottomNaviView = findViewById( R.id.bottomNaviView );
-//        bottomNaviView.setOnNavigationItemSelectedListener(this);
-//        Menu menu = bottomNaviView.getMenu();
-//        this.onNavigationItemSelected(menu.findItem(R.id.listViewItem));
-//
-//
-//        bottomNaviView.setOnNavigationItemSelectedListener( new BottomNavigationView.OnNavigationItemSelectedListener() {
-//            @Override
-//            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-//                switch (menuItem.getItemId()) {
-//                    case R.id.listViewItem:
-//                        break;
-//                    case R.id.mapViewItem:
-//                        Toast.makeText( getApplicationContext(), "MapView!!", Toast.LENGTH_SHORT ).show();
-//                        onBackPressed();
-//                        break;
-//
-//                }
-//                return false;
-//            }
-//        } );
-
-
-    }*/
-
 
     private void sendToAdapter(List<Office> dataList) {
             LinearLayoutManager linearLayoutManager = new LinearLayoutManager( getActivity(), LinearLayoutManager.VERTICAL, false );
@@ -388,11 +350,6 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
                         Double resultDistance2= resultDistance*0.001;
                         Double distanceDemi= Double.valueOf( String.format( "%.1f",resultDistance2) );
                         Log.d( TAG,"겟디스턴스!"+office.name+"--"+distanceDemi );
-//                        //소수점 자르기
-//                        Double distanceDemi= Double.valueOf( String.format( "%.1f",resultDistance) );
-//                        Log.d(TAG,"소수점확인용:"+distanceDemi);
-//                        double distance =distanceDemi*0.01;
-//                        Log.d( TAG,"디스턴스값확인:"+distance );
 
                         sortHashMap2.put( a,distanceDemi );
                     }

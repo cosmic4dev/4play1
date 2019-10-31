@@ -148,10 +148,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 switch(menuItem.getItemId()){
                     case R.id.mapViewItem:
-                        //나머지 프래그먼트를 다 없애는것도 방법이겟다.
                         getSupportFragmentManager().beginTransaction().remove( dataFragment ).commit();
                         getSupportFragmentManager().beginTransaction().remove( rxFragment ).commit();
-//                        getSupportFragmentManager().popBackStack();
                         break;
                     case R.id.listViewItem:
                        getSupportFragmentManager().beginTransaction().replace( R.id.map,dataFragment ).

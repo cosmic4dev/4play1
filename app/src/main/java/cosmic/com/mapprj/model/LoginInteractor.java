@@ -36,19 +36,19 @@ public class LoginInteractor {
         String password = loginCredentials.getPassword();
 
         if (TextUtils.isEmpty(username )){
-            loginListener.onFailed( "The email is empty" );
+            loginListener.onFailed( "이메일을 입력해주세요" );
             return true;
         }
         if(!Patterns.EMAIL_ADDRESS.matcher( username ).matches()){
-            loginListener.onFailed( "The email is invalid" );
+            loginListener.onFailed( "정확한 이메일을 입력해주세요" );
             return true;
         }
         if(TextUtils.isEmpty( password )){
-            loginListener.onFailed( "The password is empty" );
+            loginListener.onFailed( "패스워드를 입력해주세요" );
             return true;
         }
-        if (password.length() < 5){
-            loginListener.onFailed("Password is weak");
+        if (password.length() < 6){
+            loginListener.onFailed("패스워드는 6자 이상입니다.");
             return true;
         }
 
