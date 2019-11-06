@@ -2,6 +2,7 @@ package cosmic.com.mapprj.view;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -126,6 +127,7 @@ public class SearchActivity extends AppCompatActivity implements SearchContract.
     @Override
     public void showToast( String msg) {
         Toast.makeText( getApplicationContext(),msg,Toast.LENGTH_SHORT).show();
+        Log.d(TAG,"ddfdd");
     }
 
     @Override
