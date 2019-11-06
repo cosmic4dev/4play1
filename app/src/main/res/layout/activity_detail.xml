@@ -6,38 +6,36 @@
     android:orientation="vertical"
     tools:context=".view.DetailActivity">
 
-       <LinearLayout
-           android:layout_width="match_parent"
-           android:layout_height="wrap_content"
-           android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/titleImage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_launcher_foreground" />
-
-
+        <ImageView
+            android:id="@+id/titleImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="10dp"
+            android:src="@drawable/ic_launcher_foreground" />
 
 
-           <LinearLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-               <TextView
-                   android:id="@+id/reservation_rate"
-                   android:layout_width="match_parent"
-                   android:layout_height="wrap_content"
-                   android:layout_margin="10dp"
-                   android:layout_weight="1"
-                   android:gravity="center"
-                   android:lineSpacingExtra="8sp"
-                   android:text="공실률\n1.8%" />
+            <TextView
+                android:id="@+id/reservation_rate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:lineSpacingExtra="8sp"
+                android:text="공실률\n1.8%" />
 
-               <View
+            <View
                 android:layout_width="2dp"
                 android:layout_height="match_parent"
                 android:layout_margin="5dp"
@@ -52,8 +50,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginTop="10dp"
+                    android:layout_marginRight="10dp"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:lineSpacingExtra="8sp"
@@ -61,9 +59,9 @@
                     android:textAlignment="center" />
 
                 <LinearLayout
-                    android:layout_weight="1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:orientation="horizontal">
 
                     <RatingBar
@@ -97,16 +95,6 @@
                 android:background="#BDBDBD" />
 
 
-            <!--<TextView-->
-            <!--android:id="@+id/likeCountView"-->
-            <!--android:text="1"-->
-            <!--android:gravity="center"-->
-            <!--android:textStyle="bold"-->
-            <!--android:layout_margin="10dp"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content" />-->
-
-
             <TextView
                 android:id="@+id/audience"
                 android:layout_width="match_parent"
@@ -122,9 +110,9 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="10dp"
-            android:layout_margin="10dp"
             android:layout_below="@+id/ll"
             android:layout_centerInParent="true"
+            android:layout_margin="10dp"
             android:background="#BDBDBD" />
 
         <LinearLayout
@@ -136,13 +124,13 @@
             android:id="@+id/detail_tv_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20dp"
+            android:layout_marginLeft="10dp"
             android:gravity="center_horizontal"
-            android:textStyle="bold"
             android:text="스페이스"
-            android:layout_marginLeft="10dp"/>
+            android:textSize="20dp"
+            android:textStyle="bold" />
 
-         <LinearLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
@@ -179,75 +167,79 @@
 
         </LinearLayout>
 
-           <LinearLayout
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               android:layout_margin="10dp"
-               android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:orientation="vertical">
 
-                   <TextView
-                       android:id="@+id/detail_tv_url"
-                       android:layout_width="wrap_content"
-                       android:layout_height="wrap_content"
-                       android:layout_marginTop="10dp"
-                       android:linksClickable="true"
-                       android:autoLink="web"
-                       android:maxLines="1"
-                       android:text="홈페이지" />
-               <TextView
-                   android:layout_width="match_parent"
-                   android:layout_height="wrap_content"
-                   android:text="홈페이지"
-                   android:textSize="15dp"
-                   android:textStyle="bold" />
-               <View
-                   android:layout_width="match_parent"
-                   android:layout_height="10dp"
-                   android:layout_below="@+id/ll"
-                   android:layout_centerInParent="true"
-                   android:background="#BDBDBD" />
+            <TextView
+                android:id="@+id/detail_tv_url"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:autoLink="web"
+                android:linksClickable="true"
+                android:maxLines="1"
+                android:text="홈페이지" />
 
-               <LinearLayout
-                   android:orientation="horizontal"
-                   android:layout_width="match_parent"
-                   android:layout_height="wrap_content">
-               <TextView
-                   android:layout_width="wrap_content"
-                   android:layout_height="wrap_content"
-                   android:layout_marginTop="10dp"
-                   android:text="전화번호 : "
-                   android:textSize="15dp"
-                   android:textStyle="bold" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="홈페이지"
+                android:textSize="15dp"
+                android:textStyle="bold" />
 
-               <TextView
-                   android:id="@+id/detail_tv_call"
-                   android:layout_width="wrap_content"
-                   android:layout_height="wrap_content"
-                   android:layout_marginTop="10dp"
-                   android:text="phone" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:layout_below="@+id/ll"
+                android:layout_centerInParent="true"
+                android:background="#BDBDBD" />
 
-               </LinearLayout>
-               <View
-                   android:layout_width="match_parent"
-                   android:layout_height="10dp"
-                   android:layout_below="@+id/ll"
-                   android:layout_centerInParent="true"
-                   android:background="#BDBDBD" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="전화번호 : "
+                    android:textSize="15dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/detail_tv_call"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="phone" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:layout_below="@+id/ll"
+                android:layout_centerInParent="true"
+                android:background="#BDBDBD" />
 
 
+        </LinearLayout>
 
-           </LinearLayout>
 
-
-                <FrameLayout
+        <FrameLayout
             android:id="@+id/container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
-                <View
+        <View
             android:layout_width="match_parent"
             android:layout_height="10dp"
             android:background="#BDBDBD" />
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -285,5 +277,5 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-            </LinearLayout>
     </LinearLayout>
+</LinearLayout>

@@ -2,17 +2,16 @@ package cosmic.com.mapprj.view;
 
 import android.content.Intent;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,7 +24,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,22 +41,17 @@ import cosmic.com.mapprj.model.Office;
 
 import static cosmic.com.mapprj.view.MainActivity.sortHashMap;
 
-public class DataActivity extends Fragment implements DataAdapter.ClickListener,
+public class DataFragment extends Fragment implements DataAdapter.ClickListener,
         BottomNavigationView.OnNavigationItemSelectedListener{
 
     final static String TAG = "데이터액티비티";
     RecyclerView recyclerView;
-    DataAdapter dataAdapter;
     MainActivity mainActivity;
-    BottomNavigationView bottomNaviView;
     Office office;
     List<Office> dataList;
     List<Office>dataList2;
-    Toolbar toolbar;
     static ArrayList<CalcuDistance>testList;
-
     Double resultDistance;
-
     private Location location;
     HashMap<String,Double>sortHashMap2;
 
@@ -74,7 +67,11 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
         recyclerView.setHasFixedSize( true );
 
         getFireBaseDataAndSetRecyclerView();
-        setSortList(sortHashMap);
+
+        BackgroundTask backgroundTask=new BackgroundTask();
+        backgroundTask.execute( );
+
+//        setSortList(sortHashMap);
 
         return rootView;
     }
@@ -90,8 +87,6 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
 
 
     public void getFireBaseDataAndSetRecyclerView() {
-        Log.d( TAG,"파이어베이스호출" );
-//        dataList = new ArrayList<>();//#1
 
         final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         dataList = new ArrayList<>();
@@ -130,14 +125,10 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
                         String ga= (String) map.get( office.name );
                         Log.d( TAG,"ga::"+ga );
 
-
                     }
-
-
                 }
                 sendToAdapter(dataList);
                 Log.d( TAG,"dataList!!"+dataList.size() );
-
                 Log.d( TAG, "테스트사이즈2:"+testList.size());
 
             }
@@ -148,66 +139,20 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
             }
 
         } );
-//        Log.d( TAG, "테스트사이즈3:"+testList.size());
-//        return dataList;
-
     }
-
- /*   @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate( R.menu.main,menu );
-        return true;
-    }*/
-
-/*
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int optionId=item.getItemId();
-
-        if (optionId == R.id.order1) {
-//            resortList(1);
-            Log.d( TAG,"옵션버튼 타이밍" );
-//                    Intent intent = new Intent( this, SecondActivity.class );
-//                    intent.putExtra( "optionValue", 1 );
-//                    startActivity( intent );
-            setSortList(sortHashMap);//main쪽 해시
-                    Toast.makeText( getApplicationContext(), "1", Toast.LENGTH_SHORT ).show();
-
-        } else if (optionId == R.id.order2) {
-//            resortList( 2 );
-//                    Intent intent = new Intent( this, SecondActivity.class );
-//                    intent.putExtra( "optionValue", 2 );
-//                    startActivity( intent );
-                    Toast.makeText( getApplicationContext(), "2", Toast.LENGTH_SHORT ).show();
-        }
-        return super.onOptionsItemSelected( item );
-    }
-*/
-
 
     private ArrayList<CalcuDistance> calculator(String name, double targetLat, double targetLon){
         double curLat=mainActivity.currentPosition.latitude;
         double curLon=mainActivity.currentPosition.longitude;
 
-
         resultDistance=getDistance( curLat,curLon , targetLat,targetLon);
-
-
-        Log.d( TAG,"겟디스턴스 호출#" );
         Log.d( TAG,"최종 거리값 결과-"+name+" : "+ resultDistance);
-
-
         testList= new ArrayList<>();
         testList.add( new CalcuDistance( name,resultDistance ) );
 
-
         return testList;
-        //여기서 값으로 정렬된 리스트를 만들어주면 오케이
 
 //        sendSortMethod(name,resultDistance);
-
-
-
     }
 
     public double getDistance(double lat1 , double lng1 , double lat2 , double lng2 ){
@@ -229,9 +174,6 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
 
     private void setSortList(HashMap sortHashMap) {
 
-        Log.d( TAG,"setSort시작" );
-
-
         Iterator iterator= sortByValue( sortHashMap ).iterator();
         while(iterator.hasNext()){
             String temp =(String) iterator.next();
@@ -245,10 +187,8 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
     private void callSortedData(String temp) { //distance 인자까지 받아와야한다.
         dataList2 = new ArrayList<>();
         final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-//        Query query=rootRef.child( "coworkspaceInfo" ).( temp );
-//        Log.d( TAG,"쿼리:" +query);
+//
         dataList2 = new ArrayList<>();
-
 
         //#2
         //주요했던 쿼리
@@ -262,11 +202,10 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()){
 
                     Office office=postSnapshot.getValue(Office.class);
-                    Log.d( TAG,"정렬된리스트:"+office.name ); //디비순서대로 넘어오는중.
-                    Log.d( TAG,"정렬된리스트:"+office.address ); //디비순서대로 넘어오는중.
-                    Log.d( TAG,"정렬된리스트:"+office.call ); //디비순서대로 넘어오는중.
-                    Log.d( TAG,"정렬된리스트:"+office.geopoint ); //디비순서대로 넘어오는중.
-
+//                    Log.d( TAG,"정렬된리스트:"+office.name ); //디비순서대로 넘어오는중.
+//                    Log.d( TAG,"정렬된리스트:"+office.address ); //디비순서대로 넘어오는중.
+//                    Log.d( TAG,"정렬된리스트:"+office.call ); //디비순서대로 넘어오는중.
+//                    Log.d( TAG,"정렬된리스트:"+office.geopoint ); //디비순서대로 넘어오는중.
 
                     //sortHash값가져오기
                     double value=sortHashMap.get( office.name );//name을 키로 값을 찾음
@@ -314,66 +253,6 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
         startActivity( intent );
     }
 
-    private void sortListDistance(){
-
-        final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-
-        rootRef.addValueEventListener( new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Gson gson = new Gson();
-                sortHashMap2=new HashMap<>();
-
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    for (DataSnapshot snapshot1 : snapshot.getChildren()) {
-                        office = snapshot1.getValue( Office.class );
-                        String a = office.name;
-                        String b = office.address;
-                        String c = office.call;
-                        String d = office.geopoint;
-                        String e = office.image;
-                        String f = office.url;
-
-                        int idx = d.indexOf( "," );
-                        double LatitudeString = Double.parseDouble( d.substring( 0, idx ) );
-                        double LongitudeString = Double.parseDouble( d.substring( d.lastIndexOf( "," ) + 1 ) );
-
-                        Log.d( TAG,"확인:"+ LatitudeString);
-                        Log.d( TAG,"확인:"+ LongitudeString);
-                        double curLat=location.getLatitude();
-                        double curLon=location.getLongitude();
-
-                        Log.d( TAG,"확인:"+ curLat);
-                        Log.d( TAG,"확인"+curLon );
-
-                        Double resultDistance=getDistance( curLat,curLon , LatitudeString,LongitudeString);
-                        Double resultDistance2= resultDistance*0.001;
-                        Double distanceDemi= Double.valueOf( String.format( "%.1f",resultDistance2) );
-                        Log.d( TAG,"겟디스턴스!"+office.name+"--"+distanceDemi );
-
-                        sortHashMap2.put( a,distanceDemi );
-                    }
-
-                    Log.d( TAG,"해시2:"+sortHashMap2.size() ); //해시로 다 다음
-
-                }
-
-                Object obj=gson.fromJson( String.valueOf( office ),Office.class );
-                if(obj==null){
-                    Toast.makeText( getContext(),"객체화 안됨",Toast.LENGTH_SHORT ).show();
-                }
-
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        } );
-
-
-    }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -382,8 +261,12 @@ public class DataActivity extends Fragment implements DataAdapter.ClickListener,
     }
 
 
+    class BackgroundTask extends AsyncTask<Integer, Integer, Boolean> {
 
-
-
-
+        @Override
+        protected Boolean doInBackground(Integer... integers) {
+            setSortList( sortHashMap );
+            return false;
+        }
+    }
 }

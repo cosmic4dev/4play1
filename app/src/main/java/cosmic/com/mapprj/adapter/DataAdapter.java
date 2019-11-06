@@ -2,7 +2,6 @@ package cosmic.com.mapprj.adapter;
 
 import android.content.Context;
 import android.net.Uri;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,7 +59,15 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.DataViewHolder
         holder.tv_title.setText( office.name );
         holder.tv_address.setText( office.address );
         holder.tv_call.setText( office.call );
-        holder.tv_distance.setText( String.valueOf(office.distance )+" KM");
+        holder.tv_distance.setText((office.distance )+" KM");
+
+//        ImageView target=holder.title_image;
+//                Glide.with(context)
+//                        .load( imageUri )
+////                        .fitCenter()
+//                        .centerCrop()
+//                        .override(200,200  )
+//                        .into( target );
 
         Picasso.get()
                 .load( imageUri )
@@ -77,7 +84,6 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.DataViewHolder
 
     @Override
     public int getItemCount() {
-        Log.d( TAG, "리스트 갯수::" + officeArrayList.size() );//넘어왔는가? no 0뜸
         if (officeArrayList == null) {
             return 0;
         }
@@ -107,7 +113,6 @@ public class DataAdapter extends RecyclerView.Adapter<DataAdapter.DataViewHolder
 
         public void setItem(CalcuDistance movieImageItem){
 
-            Log.d( TAG,"셋디스턴스:"+ (int) movieImageItem.getDistance());
         }
     }
 }

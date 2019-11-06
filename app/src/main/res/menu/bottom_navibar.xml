@@ -12,7 +12,7 @@
         android:title="List" />
 
     <item
-        android:id="@+id/testItem"
+        android:id="@+id/blogItem"
         android:icon="@drawable/baseline_feedback_white_18dp"
-        android:title="Etc" />
+        android:title="blog" />
 </menu>

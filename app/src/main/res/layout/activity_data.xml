@@ -7,7 +7,7 @@
     android:id="@+id/drawer_layout"
     android:orientation="vertical"
     android:background="@color/beige"
-    tools:context="cosmic.com.mapprjkotlin.view.DataActivity">
+    tools:context="cosmic.com.mapprj.view.DataFragment">
 
 
     <androidx.recyclerview.widget.RecyclerView

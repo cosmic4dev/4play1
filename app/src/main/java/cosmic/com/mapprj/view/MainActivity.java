@@ -47,11 +47,12 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import cosmic.com.mapprj.R;
 import cosmic.com.mapprj.contract.MainContract;
 import cosmic.com.mapprj.model.Office;
@@ -63,60 +64,48 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         MainContract.view {
 
     GoogleMap mMap;
-    BottomNavigationView bottomNavigationView;
     final static String TAG = "MainActivity";
 
     private final static int PERMISSIONS_REQUEST_CODE = 100;
 
     private static final int GPS_ENABLE_REQUEST_CODE = 2001;
-    private static final int UPDATE_INTERVAL_MS = 1000;  // 1초
-    private static final int UPDATE_INTERVAL_MS2 = 10000; //10초
-    private static final int FASTEST_UPDATE_INTERVAL_MS = 500; // 0.5초
+    private static final int UPDATE_INTERVAL_MS = 1000;
+    private static final int FASTEST_UPDATE_INTERVAL_MS = 500;
     boolean needRequest = false;
-
     private Marker currentMarker = null;
-    // onRequestPermissionsResult에서 수신된 결과에서 ActivityCompat.requestPermissions를 사용한 퍼미션 요청을 구별하기 위해 사용됩니다.
-
-
     Location mCurrentLocatiion;
     static LatLng currentPosition;
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest locationRequest;
     private Location location;
 
-    private View mLayout;
-    // 앱을 실행하기 위해 필요한 퍼미션을 정의합니다.
     String[] REQUIRED_PERMISSIONS = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};  // 외부 저장소
     Office office;
 
     List<Office> dataList2;
-    static ArrayList<Office> officeDataList;
+    DataFragment dataActivity;
+    static HashMap<String, Double> sortHashMap; //거리순으로 정렬된 맵
 
-    DataActivity dataActivity;
-    static HashMap<String,Double>sortHashMap; //거리순으로 정렬된 맵
+    DataFragment dataFragment;
+    InfoFragment infoFragment;
 
+    @BindView(R.id.layout_main)
+    View mLayout;
 
-    private FragmentManager fragmentManager = getSupportFragmentManager();
-
-    DataActivity dataFragment;
-    NewsFragment newsFragment;
-    RxFragment rxFragment;
+    @BindView(R.id.bottomNaviView)
+    BottomNavigationView bottomNavigationView;
+    MultiThread multiThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate( savedInstanceState );
         setContentView( R.layout.activity_main );
-        mLayout = findViewById( R.id.layout_main );
-        bottomNavigationView = findViewById( R.id.bottomNaviView );
 
+        ButterKnife.bind( this );
         locationSetting();
 
-
-        dataFragment = new DataActivity();
-        newsFragment = new NewsFragment();
-        rxFragment = new RxFragment();
-
+        dataFragment = new DataFragment();
         locationRequest = new LocationRequest()
                 .setPriority( LocationRequest.PRIORITY_HIGH_ACCURACY )
                 .setInterval( UPDATE_INTERVAL_MS )
@@ -134,30 +123,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById( R.id.map );
         mapFragment.getMapAsync( this );
 
-//        getFireBaseData();
 
-        MultiThread multiThread=new MultiThread();
-        multiThread.start();
-//        sortListDistance();  //스레드로 이사
-
+        Thread thread= new MultiThread();
+        thread.start();
 
         bottomNavigationView.setOnNavigationItemSelectedListener( new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
+                closeFragment();//화면전환 전에 띄워놓은 프래그먼트지우기
 
-                switch(menuItem.getItemId()){
+                switch (menuItem.getItemId()) {
                     case R.id.mapViewItem:
                         getSupportFragmentManager().beginTransaction().remove( dataFragment ).commit();
-                        getSupportFragmentManager().beginTransaction().remove( rxFragment ).commit();
                         break;
                     case R.id.listViewItem:
-                       getSupportFragmentManager().beginTransaction().replace( R.id.map,dataFragment ).
-                        addToBackStack(null).commit();
+                        if(sortHashMap!=null) {
+                            getSupportFragmentManager().beginTransaction().replace( R.id.map, dataFragment ).
+                                    addToBackStack( null ).commit();
+                        }
                         break;
-                    case R.id.testItem:
-                        getSupportFragmentManager().beginTransaction().replace(R.id.map, rxFragment)
-                                .addToBackStack(null).commit();
+                    case R.id.blogItem:
+                        Intent intent = new Intent( MainActivity.this, SearchActivity.class );
+                        startActivity( intent );
                         break;
                 }
 
@@ -167,9 +155,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    private void delayMoment() {
+        try {
+            Thread.sleep( 1000 );
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void locationSetting() {
-        Log.d( TAG,"로케이션세팅" );
         locationRequest = new LocationRequest()
                 .setPriority( LocationRequest.PRIORITY_HIGH_ACCURACY )
                 .setInterval( UPDATE_INTERVAL_MS )
@@ -177,13 +172,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         LocationSettingsRequest.Builder builder =
                 new LocationSettingsRequest.Builder();
-
         builder.addLocationRequest( locationRequest );
-
-        //위치권한 창
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient( this );
-
-
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById( R.id.map );
         mapFragment.getMapAsync( this );
@@ -191,46 +181,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        Log.d( TAG,"생명주기-온세이브" );
         super.onSaveInstanceState( outState );
     }
 
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState( savedInstanceState );
-
-        String getInstance=savedInstanceState.getString( "temLocation" );
-        Log.d( TAG,"겟인스턴스값:"+getInstance );
-
-    }
-
-    private void requestLocation(){
-        locationRequest = new LocationRequest()
-                .setPriority( LocationRequest.PRIORITY_HIGH_ACCURACY )
-                .setInterval( UPDATE_INTERVAL_MS )
-                .setFastestInterval( FASTEST_UPDATE_INTERVAL_MS );
-
-        LocationSettingsRequest.Builder builder =
-                new LocationSettingsRequest.Builder();
-
-        builder.addLocationRequest( locationRequest );
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-    }
-
-    public void sortListDistance(){
+    public void sortListDistance() {
 
         final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-
-        dataActivity = new DataActivity();
+        dataActivity = new DataFragment();
         rootRef.addValueEventListener( new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Gson gson = new Gson();
-                sortHashMap=new HashMap<>();
+                sortHashMap = new HashMap<>();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     for (DataSnapshot snapshot1 : snapshot.getChildren()) {
@@ -245,50 +207,29 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         int idx = d.indexOf( "," );
                         double LatitudeString = Double.parseDouble( d.substring( 0, idx ) );
                         double LongitudeString = Double.parseDouble( d.substring( d.lastIndexOf( "," ) + 1 ) );
-
-                        Log.d( TAG,"확인:"+ LatitudeString);
-                        Log.d( TAG,"확인:"+ LongitudeString);
-                        double curLat=location.getLatitude();
-                        double curLon=location.getLongitude();
-
-                        Log.d( TAG,"확인:"+ curLat);
-                        Log.d( TAG,"확인"+curLon );
+                        double curLat = location.getLatitude();
+                        double curLon = location.getLongitude();
 
                         //marker
                         MarkerOptions markerOptions = new MarkerOptions();
                         markerOptions.position( new LatLng( LatitudeString, LongitudeString ) )
                                 .title( a )
-                                .snippet( b);
+                                .snippet( b );
                         mMap.addMarker( markerOptions );
 
-                        Double resultDistance=dataActivity.getDistance( curLat,curLon , LatitudeString,LongitudeString);
-                        Double resultDistance2= resultDistance*0.001;
-                        Double distanceDemi= Double.valueOf( String.format( "%.1f",resultDistance2) );
-                        Log.d( TAG,"겟디스턴스!"+office.name+"--"+distanceDemi );
-//                        //소수점 자르기
-//                        Double distanceDemi= Double.valueOf( String.format( "%.1f",resultDistance) );
-//                        Log.d(TAG,"소수점확인용:"+distanceDemi);
-//                        double distance =distanceDemi*0.01;
-//                        Log.d( TAG,"디스턴스값확인:"+distance );
+                        Double resultDistance = dataActivity.getDistance( curLat, curLon, LatitudeString, LongitudeString );
+                        Double resultDistance2 = resultDistance * 0.001;
+                        Double distanceDemi = Double.valueOf( String.format( "%.1f", resultDistance2 ) );
+                        Log.d( TAG, "겟디스턴스!" + office.name + "--" + distanceDemi );
 
-                        sortHashMap.put( a,distanceDemi );
+                        sortHashMap.put( a, distanceDemi );
                     }
-
-                    Log.d( TAG,"해시:"+sortHashMap.size() ); //해시로 다 다음
-
                 }
-
-                Object obj=gson.fromJson( String.valueOf( office ),Office.class );
-                if(obj==null){
-                    Toast.makeText( getApplicationContext(),"객체화 안됨",Toast.LENGTH_SHORT ).show();
-                }
-
-
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                Log.d( TAG,databaseError.toString());
             }
         } );
 
@@ -298,31 +239,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onPause() {
         super.onPause();
-        overridePendingTransition(0, 0);
-        Log.d( TAG,"생명주기-온포즈" );
-
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d( TAG,"생명주기-온리쥼" );
-
-//        if(location ==null){
-//            Log.d( TAG,"생명주기-온리쥼 로케이션 널아님" );
-//            location.set( null );
-//        }
+        overridePendingTransition( 0, 0 );
     }
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
-        Log.d( TAG, "onMapReady :" );
         mMap = googleMap;
-
         check();
-        //런타임 퍼미션 요청 대화상자나 GPS 활성 요청 대화상자 보이기전에
-        //지도의 초기위치를 서울로 이동
         setDefaultLocation();
 
         mMap.getUiSettings().setMyLocationButtonEnabled( true );
@@ -331,10 +254,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             @Override
             public void onMapClick(LatLng latLng) {
-
+                closeFragment();
                 Log.d( TAG, "onMapClick :" + latLng );
-
-
             }
 
         } );
@@ -350,31 +271,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mMap.setOnInfoWindowClickListener( this );
 
-//        mMap.setInfoWindowAdapter( new GoogleMap.InfoWindowAdapter() {
-//            @Override
-//            public View getInfoWindow(Marker marker) {
-//                Toast.makeText( getApplicationContext(),"윈도우",Toast.LENGTH_SHORT ).show();
-//                return null;
-//            }
-//
-//            @Override
-//            public View getInfoContents(Marker marker) {
-//                return null;
-//            }
-//        } );
-
-
     }
-
-
 
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-//        Toast.makeText( getApplicationContext(), marker.getTitle(), Toast.LENGTH_SHORT ).show();
-
-
-//        return true;
         return false;// false 하면 스니펫보임
     }
 
@@ -393,7 +294,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             // 2. 이미 퍼미션을 가지고 있다면
             // ( 안드로이드 6.0 이하 버전은 런타임 퍼미션이 필요없기 때문에 이미 허용된 걸로 인식합니다.)
-
 
             startLocationUpdates(); // 3. 위치 업데이트 시작
 
@@ -433,14 +333,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public void onLocationResult(LocationResult locationResult) {
             super.onLocationResult( locationResult );
-
-            Log.d( TAG,"로케이션 콜백호출됨" );
             //포커스를 현재 위치로 돌아오는 것을 막음 (유효했음)
             mFusedLocationClient.removeLocationUpdates( this );
 
             List<Location> locationList = locationResult.getLocations();
 
-            Log.d( TAG,"로케이션리스트사이즈: "+locationList.size() );
+            Log.d( TAG, "로케이션리스트사이즈: " + locationList.size() );
             if (locationList.size() > 0) {
                 location = locationList.get( locationList.size() - 1 );
                 //location = locationList.get(0);
@@ -492,7 +390,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return;
             }
 
-
             Log.d( TAG, "startLocationUpdates : call mFusedLocationClient.requestLocationUpdates" );
 
             mFusedLocationClient.requestLocationUpdates( locationRequest, locationCallback, Looper.myLooper() );
@@ -508,33 +405,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onStart() {
         super.onStart();
-
-
-        Log.d( TAG, "onStart" );
-
-
         if (checkPermission()) {
-
             Log.d( TAG, "onStart : call mFusedLocationClient.requestLocationUpdates" );
             mFusedLocationClient.requestLocationUpdates( locationRequest, locationCallback, null );
-
             if (mMap != null)
                 mMap.setMyLocationEnabled( true );
 
         }
-
 
     }
 
 
     @Override
     protected void onStop() {
-        Toast.makeText( getApplicationContext(),"온스탑",Toast.LENGTH_SHORT ).show();
         super.onStop();
 
         if (mFusedLocationClient != null) {
-
-            Log.d( TAG, "onStop : call stopLocationUpdates" );
             mFusedLocationClient.removeLocationUpdates( locationCallback );
         }
     }
@@ -609,7 +495,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void setDefaultLocation() {
 
-
         //디폴트 위치, Seoul
         LatLng DEFAULT_LOCATION = new LatLng( 37.56, 126.97 );
         String markerTitle = "위치정보 가져올 수 없음";
@@ -632,7 +517,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    //여기부터는 런타임 퍼미션 처리을 위한 메소드들
     private boolean checkPermission() {
 
         int hasFineLocationPermission = ContextCompat.checkSelfPermission( this,
@@ -661,12 +545,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (permsRequestCode == PERMISSIONS_REQUEST_CODE && grandResults.length == REQUIRED_PERMISSIONS.length) {
 
-            // 요청 코드가 PERMISSIONS_REQUEST_CODE 이고, 요청한 퍼미션 개수만큼 수신되었다면
-
             boolean check_result = true;
-
-
-            // 모든 퍼미션을 허용했는지 체크합니다.
 
             for (int result : grandResults) {
                 if (result != PackageManager.PERMISSION_GRANTED) {
@@ -709,7 +588,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //                        @Override
 //                        public void onClick(View view) {
 //
- //                            finish();
+                    //                            finish();
 //                        }
 //                    }).show();
                 }
@@ -718,18 +597,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private long time= 0;
+    private long time = 0;
 
     @Override
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
             super.onBackPressed();
-        }else {
-            //백키누르면 무조건 디폴트(맵뷰)나오게 설정함
+        } else {
+            //백키누르면 무조건 디폴트(메인)나오게 설정함
             if (System.currentTimeMillis() - time >= 2000) {
                 time = System.currentTimeMillis();
                 getSupportFragmentManager().beginTransaction().remove( dataFragment ).commit();
-                getSupportFragmentManager().beginTransaction().remove( newsFragment ).commit();
 
             } else if (System.currentTimeMillis() - time < 2000) {
                 finish();
@@ -739,7 +617,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onBackPressedListener() {
-        Toast.makeText( getApplicationContext(),"토스트",Toast.LENGTH_SHORT).show();
+        Toast.makeText( getApplicationContext(), "토스트", Toast.LENGTH_SHORT ).show();
         getSupportFragmentManager().popBackStack();
 
 
@@ -747,7 +625,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void showToast(String msg) {
-        Toast.makeText( getApplicationContext(),msg ,Toast.LENGTH_SHORT ).show();
+        Toast.makeText( getApplicationContext(), msg, Toast.LENGTH_SHORT ).show();
     }
 
     @Override
@@ -760,8 +638,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onDestroy() {
         super.onDestroy();
         System.exit( 0 );
-        Log.d( TAG,"생명주기-온디스토리이"+location.getLatitude() );
-        //아니면 onSave로 넘겨줘? 일단 피니쉬 시키는걸로.
     }
 
     //여기부터는 GPS 활성화를 위한 메소드들
@@ -815,98 +691,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void getFireBaseData() {
-//        dataList = new ArrayList<>();
-        final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-
-        rootRef.addValueEventListener( new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Gson gson = new Gson();
-                dataList2 = new ArrayList<>();
-
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    int valueCount = (int) snapshot.getChildrenCount();
-                    Log.d(  TAG, "카운트: " + valueCount ); //데이터 카운트 OK!
-                    for (DataSnapshot snapshot1 : snapshot.getChildren()) {
-                        Log.d( TAG, "겟밸류:" + snapshot1.getValue() );//완전 json 형태로 개별적으로 분리됨
-                        //so..
-//                        String jsonString = "{'id':'jekalmin','name':'Min','age':26,'address':'Seoul'}";
-                        office = snapshot1.getValue( Office.class );
-                        String a = office.name;
-                        String b = office.address;
-                        String c = office.call;
-                        String d = office.geopoint;
-                        String e = office.image;
-                        String f = office.url;
-
-                        int idx = d.indexOf( "," );
-                        double LatitudeString = Double.parseDouble( d.substring( 0, idx ) );
-                        double LongitudeString = Double.parseDouble( d.substring( d.lastIndexOf( "," ) + 1 ) );
-                        //marker
-                        MarkerOptions markerOptions = new MarkerOptions();
-                        markerOptions.position( new LatLng( LatitudeString, LongitudeString ) )
-                                .title( a )
-                                .snippet( b);
-                        mMap.addMarker( markerOptions );
-
-//                        mMap.setOnMarkerCl ickListener( new GoogleMap.OnMarkerClickListener() {
-//                            @Override
-//                            public boolean onMarkerClick(Marker marker) {
-//                                Toast.makeText( getApplicationContext(),"클릭됨:",Toast.LENGTH_SHORT ).show();
-//                                return false;
-//                            }
-//                        } );
-
-
-                    }
-
-
-
-                }
-
-                //결국엔 Gson으로 데이터 객체화 필요했음.
-                Object obj=gson.fromJson( String.valueOf( office ),Office.class );
-                if(obj==null){
-                    Toast.makeText( getApplicationContext(),"객체화 안됨",Toast.LENGTH_SHORT ).show();
-                }
-//                dataList2.add( office ); //애초에 dataList2에 안들어간거...
-
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        } );
-
-    }
-
-
     @Override
     public void onInfoWindowClick(Marker marker) {
 
-        InfoFragment infoFragment = new InfoFragment();
-        getSupportFragmentManager().beginTransaction().replace( R.id.container,infoFragment).commit();
+        infoFragment = new InfoFragment();
+        getSupportFragmentManager().beginTransaction().replace( R.id.container, infoFragment ).addToBackStack( null ).commit();
 
         Bundle bundle = new Bundle();
-        bundle.putString( "tossTitle" , marker.getTitle());
-        bundle.putString( "tossEtc",marker.getSnippet() );
-        String check=marker.getTitle();
-        Log.d( TAG,"체크:"+ check);
+        bundle.putString( "tossTitle", marker.getTitle() );
+        bundle.putString( "tossEtc", marker.getSnippet() );
+        String check = marker.getTitle();
+        Log.d( TAG, "체크:" + check );
 
         infoFragment.setArguments( bundle );
 
     }
 
-    public class MultiThread extends Thread{
+    public class MultiThread extends Thread {
         @Override
         public void run() {
-            super.run();
-
             sortListDistance();
-
         }
     }
 }
