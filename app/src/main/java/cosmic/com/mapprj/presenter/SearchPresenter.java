@@ -55,12 +55,11 @@ public class SearchPresenter implements SearchContract.presenter {
             @Override
             public void onResponse(Call<BlogList> call, retrofit2.Response<BlogList> response) {
                 if(response.isSuccessful()){
-                    BlogList blogList=response.body();
+                    blogList=response.body();
 
                     try{
                         //유효하지않는검색어처리
                         if(blogList.getItems().isEmpty()){
-                            Log.d( "ch","유효하지않음" );
                             view.showToast( "유효하지 않는 검색입니다." );
                         }
                     }catch (Exception e){
@@ -146,8 +145,6 @@ public class SearchPresenter implements SearchContract.presenter {
         }else{
             view.showToast( "결과없음" );
         }
-//        view.recieveDataList( dataList );
-//        view.closeKeyboard();
     }
 
 

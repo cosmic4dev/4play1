@@ -5,13 +5,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -21,6 +21,9 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Optional;
 import cosmic.com.mapprj.R;
 import cosmic.com.mapprj.model.Office;
 
@@ -28,32 +31,38 @@ public class DetailActivity extends AppCompatActivity {
 
     final static String TAG = "DATACTivity";
 
-    Button bookingButton;;
+    @BindView(R.id.bookingButton)
+    Button bookingButton;
+    @BindView(R.id.titleImage)
     ImageView titleImage;
-    TextView titleName, audience_rate, detail_tv_name, detail_tv_url;
-    TextView reservation_rate, audience, detail_tv_address, detail_tv_call;
+    @BindView(R.id.audience_rate)
+    TextView audience_rate;
+    @BindView(R.id.detail_tv_name)
+    TextView detail_tv_name;
+    @BindView(R.id.detail_tv_url)
+    TextView detail_tv_url;
+    @BindView(R.id.reservation_rate)
+    TextView reservation_rate;
+    @BindView(R.id.audience)
+    TextView audience;
+    @BindView(R.id.detail_tv_address)
+    TextView detail_tv_address;
+    @BindView(R.id.detail_tv_call)
+    TextView detail_tv_call;
+    @BindView(R.id.ratingBar)
     RatingBar ratingBar;
-    RecyclerView recyclerView;
+
     Office office;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate( savedInstanceState );
         setContentView( R.layout.activity_detail );
-
-        detail_tv_url = findViewById( R.id.detail_tv_url );
-        detail_tv_name = findViewById( R.id.detail_tv_name );
-        detail_tv_address = findViewById( R.id.detail_tv_address );
-        detail_tv_call = findViewById( R.id.detail_tv_call );
-        titleImage = findViewById( R.id.titleImage );
-        audience_rate = findViewById( R.id.audience_rate );
-        reservation_rate = findViewById( R.id.reservation_rate );
-        audience = findViewById( R.id.audience );
-        ratingBar = findViewById( R.id.ratingBar );
-        recyclerView = findViewById( R.id.recyclerView );
+        getWindow().addFlags( WindowManager.LayoutParams.FLAG_FULLSCREEN );
+        ButterKnife.bind( this );
 
         requestDetailData();
-        bookingButton=findViewById( R.id.bookingButton );
+        bookingButton = findViewById( R.id.bookingButton );
         bookingButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -65,7 +74,6 @@ public class DetailActivity extends AppCompatActivity {
         } );
     }
 
-
     public void requestDetailData() {
 
         Intent intent = getIntent();
@@ -74,6 +82,7 @@ public class DetailActivity extends AppCompatActivity {
         //주요했던 쿼리
         Query query = mFiReference.child( "coworkspaceInfo" ).orderByChild( "name" ).equalTo( getTitle );
         query.addValueEventListener( new ValueEventListener() {
+            @Optional
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
@@ -108,10 +117,4 @@ public class DetailActivity extends AppCompatActivity {
             }
         } );
     }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-    }
-
 }

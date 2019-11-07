@@ -20,7 +20,6 @@ import cosmic.com.mapprj.R;
 
 
 public class InfoFragment extends Fragment {
-    final static String TAG = "Fragment ";
 
     @BindView( R.id.tv_fragInfo1 )
             TextView tv_fragInfo1;
@@ -30,7 +29,7 @@ public class InfoFragment extends Fragment {
             ImageButton backBtn;
     @BindView( R.id.detailBtn )
     Button detailBtn;
-    static boolean isFragment;
+    static boolean isInfoFragment=false;
 
     @Nullable
     @Override
@@ -65,14 +64,11 @@ public class InfoFragment extends Fragment {
     @Override
     public void onAttachFragment(Fragment childFragment) {
         super.onAttachFragment( childFragment );
-//        Log.d( TAG,"온어태치프래그" );
-//        isFragment = true;
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-//        isFragment=false;
     }
 
     public  void deleteFragment() {
@@ -81,5 +77,8 @@ public class InfoFragment extends Fragment {
         fragmentManager.popBackStack();
     }
 
-
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
 }

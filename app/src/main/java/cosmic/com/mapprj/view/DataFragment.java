@@ -35,7 +35,6 @@ import java.util.Map;
 
 import cosmic.com.mapprj.R;
 import cosmic.com.mapprj.adapter.DataAdapter;
-import cosmic.com.mapprj.contract.MainContract;
 import cosmic.com.mapprj.model.CalcuDistance;
 import cosmic.com.mapprj.model.Office;
 
@@ -44,7 +43,7 @@ import static cosmic.com.mapprj.view.MainActivity.sortHashMap;
 public class DataFragment extends Fragment implements DataAdapter.ClickListener,
         BottomNavigationView.OnNavigationItemSelectedListener{
 
-    final static String TAG = "데이터액티비티";
+    final static String TAG = "데이터프래그먼트";
     RecyclerView recyclerView;
     MainActivity mainActivity;
     Office office;
@@ -52,11 +51,7 @@ public class DataFragment extends Fragment implements DataAdapter.ClickListener,
     List<Office>dataList2;
     static ArrayList<CalcuDistance>testList;
     Double resultDistance;
-    private Location location;
-    HashMap<String,Double>sortHashMap2;
-
-    MainContract.presenter presenter;
-
+//    private Location location;
 
     @Nullable
     @Override
@@ -66,12 +61,10 @@ public class DataFragment extends Fragment implements DataAdapter.ClickListener,
         recyclerView = rootView.findViewById( R.id.recyclerView );
         recyclerView.setHasFixedSize( true );
 
-        getFireBaseDataAndSetRecyclerView();
+        getFireBaseData();
 
         BackgroundTask backgroundTask=new BackgroundTask();
         backgroundTask.execute( );
-
-//        setSortList(sortHashMap);
 
         return rootView;
     }
@@ -86,7 +79,7 @@ public class DataFragment extends Fragment implements DataAdapter.ClickListener,
     }
 
 
-    public void getFireBaseDataAndSetRecyclerView() {
+    public void getFireBaseData() {
 
         final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
         dataList = new ArrayList<>();
@@ -99,13 +92,7 @@ public class DataFragment extends Fragment implements DataAdapter.ClickListener,
                     for (DataSnapshot snapshot1 : snapshot.getChildren()) {
 
                         office = snapshot1.getValue( Office.class );
-                        String a = office.name;
-                        String b = office.address;
-                        String c = office.call;
                         String d = office.geopoint;
-                        String e = office.image;
-                        String f = office.url;
-                        double g= office.distance;
 
                         int idx = d.indexOf( "," );
                         double LatitudeString = Double.parseDouble( d.substring( 0, idx ) );
@@ -118,19 +105,12 @@ public class DataFragment extends Fragment implements DataAdapter.ClickListener,
                         //object 타입을 리스트로 변환시킴
                         GenericTypeIndicator<List<Office>> t = new GenericTypeIndicator<List<Office>>() {};
                         dataList= snapshot.getValue(t);
-//                        Log.d( TAG,"dataList::"+dataList.size());//??
-                        Log.d( TAG,"officeList::"+dataList.size() );
 
                         testList=calculator(office.name,LatitudeString,LongitudeString);
-                        String ga= (String) map.get( office.name );
-                        Log.d( TAG,"ga::"+ga );
 
                     }
                 }
                 sendToAdapter(dataList);
-                Log.d( TAG,"dataList!!"+dataList.size() );
-                Log.d( TAG, "테스트사이즈2:"+testList.size());
-
             }
 
             @Override
@@ -151,12 +131,10 @@ public class DataFragment extends Fragment implements DataAdapter.ClickListener,
         testList.add( new CalcuDistance( name,resultDistance ) );
 
         return testList;
-
-//        sendSortMethod(name,resultDistance);
     }
 
     public double getDistance(double lat1 , double lng1 , double lat2 , double lng2 ){
-        Log.d( TAG,"계산들어옴" );
+
         double distance;
 
         Location locationA = new Location("point A");
@@ -178,38 +156,28 @@ public class DataFragment extends Fragment implements DataAdapter.ClickListener,
         while(iterator.hasNext()){
             String temp =(String) iterator.next();
             Log.d( TAG,"hash정렬:-"+temp );
-
             callSortedData(temp);
         }
 
     }
 
     private void callSortedData(String temp) { //distance 인자까지 받아와야한다.
-        dataList2 = new ArrayList<>();
+
         final DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
-//
         dataList2 = new ArrayList<>();
 
-        //#2
         //주요했던 쿼리
         Query query=rootRef.child( "coworkspaceInfo" ).orderByChild( "name" ).equalTo( temp );
-
         query.addValueEventListener( new ValueEventListener() {
 
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()){
-
                     Office office=postSnapshot.getValue(Office.class);
-//                    Log.d( TAG,"정렬된리스트:"+office.name ); //디비순서대로 넘어오는중.
-//                    Log.d( TAG,"정렬된리스트:"+office.address ); //디비순서대로 넘어오는중.
-//                    Log.d( TAG,"정렬된리스트:"+office.call ); //디비순서대로 넘어오는중.
-//                    Log.d( TAG,"정렬된리스트:"+office.geopoint ); //디비순서대로 넘어오는중.
 
                     //sortHash값가져오기
                     double value=sortHashMap.get( office.name );//name을 키로 값을 찾음
-                    Log.d( TAG,"$$:"+value );//맞음
                     office.distance = value; //이게되면 오케이
                     dataList2.add(office);
                 }
@@ -269,4 +237,7 @@ public class DataFragment extends Fragment implements DataAdapter.ClickListener,
             return false;
         }
     }
+
+
+
 }

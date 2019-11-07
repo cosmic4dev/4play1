@@ -44,7 +44,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -56,6 +55,8 @@ import butterknife.ButterKnife;
 import cosmic.com.mapprj.R;
 import cosmic.com.mapprj.contract.MainContract;
 import cosmic.com.mapprj.model.Office;
+
+import static cosmic.com.mapprj.view.InfoFragment.isInfoFragment;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback,
         ActivityCompat.OnRequestPermissionsResultCallback,
@@ -82,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     String[] REQUIRED_PERMISSIONS = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};  // 외부 저장소
     Office office;
 
-    List<Office> dataList2;
     DataFragment dataActivity;
     static HashMap<String, Double> sortHashMap; //거리순으로 정렬된 맵
 
@@ -94,15 +94,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @BindView(R.id.bottomNaviView)
     BottomNavigationView bottomNavigationView;
-    MultiThread multiThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate( savedInstanceState );
         setContentView( R.layout.activity_main );
-
         ButterKnife.bind( this );
+
         locationSetting();
 
         dataFragment = new DataFragment();
@@ -124,25 +122,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync( this );
 
 
-        Thread thread= new MultiThread();
+        Thread thread = new MultiThread();
         thread.start();
 
         bottomNavigationView.setOnNavigationItemSelectedListener( new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
 
-                closeFragment();//화면전환 전에 띄워놓은 프래그먼트지우기
+                if(isInfoFragment==true) closeFragment();//화면전환 전에 띄워놓은 프래그먼트지우기
 
                 switch (menuItem.getItemId()) {
                     case R.id.mapViewItem:
                         getSupportFragmentManager().beginTransaction().remove( dataFragment ).commit();
                         break;
                     case R.id.listViewItem:
-                        if(sortHashMap!=null) {
                             getSupportFragmentManager().beginTransaction().replace( R.id.map, dataFragment ).
                                     addToBackStack( null ).commit();
-                        }
-                        break;
+                            break;
                     case R.id.blogItem:
                         Intent intent = new Intent( MainActivity.this, SearchActivity.class );
                         startActivity( intent );
@@ -154,15 +150,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         } );
 
     }
-
-    private void delayMoment() {
-        try {
-            Thread.sleep( 1000 );
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
 
     private void locationSetting() {
         locationRequest = new LocationRequest()
@@ -191,7 +178,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         rootRef.addValueEventListener( new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Gson gson = new Gson();
                 sortHashMap = new HashMap<>();
 
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
@@ -199,10 +185,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         office = snapshot1.getValue( Office.class );
                         String a = office.name;
                         String b = office.address;
-                        String c = office.call;
                         String d = office.geopoint;
-                        String e = office.image;
-                        String f = office.url;
 
                         int idx = d.indexOf( "," );
                         double LatitudeString = Double.parseDouble( d.substring( 0, idx ) );
@@ -229,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                Log.d( TAG,databaseError.toString());
+                Log.d( TAG, databaseError.toString() );
             }
         } );
 
@@ -338,7 +321,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             List<Location> locationList = locationResult.getLocations();
 
-            Log.d( TAG, "로케이션리스트사이즈: " + locationList.size() );
             if (locationList.size() > 0) {
                 location = locationList.get( locationList.size() - 1 );
                 //location = locationList.get(0);
@@ -355,7 +337,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 //현재 위치에 마커 생성하고 이동
                 setCurrentLocation( location, markerTitle, markerSnippet );
-                Log.d( TAG, "현재위치마커 작동" );
 
                 mCurrentLocatiion = location;
 
@@ -406,7 +387,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onStart() {
         super.onStart();
         if (checkPermission()) {
-            Log.d( TAG, "onStart : call mFusedLocationClient.requestLocationUpdates" );
             mFusedLocationClient.requestLocationUpdates( locationRequest, locationCallback, null );
             if (mMap != null)
                 mMap.setMyLocationEnabled( true );
@@ -441,17 +421,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     1 );
         } catch (IOException ioException) {
             //네트워크 문제
-            Toast.makeText( this, "지오코더 서비스 사용불가", Toast.LENGTH_LONG ).show();
+            showToast( "네트워크가 연결되어있지 않습니다." );
             return "지오코더 서비스 사용불가";
         } catch (IllegalArgumentException illegalArgumentException) {
-            Toast.makeText( this, "잘못된 GPS 좌표", Toast.LENGTH_LONG ).show();
+            showToast( "잘못된 GPS 좌표" );
             return "잘못된 GPS 좌표";
 
         }
 
 
         if (addresses == null || addresses.size() == 0) {
-            Toast.makeText( this, "주소 미발견", Toast.LENGTH_LONG ).show();
+            showToast( "주소 미발견" );
             return "주소 미발견";
 
         } else {
@@ -494,7 +474,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     public void setDefaultLocation() {
-
         //디폴트 위치, Seoul
         LatLng DEFAULT_LOCATION = new LatLng( 37.56, 126.97 );
         String markerTitle = "위치정보 가져올 수 없음";
@@ -579,18 +558,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 } else {
 
-
                     return;
-//                    // "다시 묻지 않음"을 사용자가 체크하고 거부를 선택한 경우에는 설정(앱 정보)에서 퍼미션을 허용해야 앱을 사용할 수 있습니다.
-//                    Snackbar.make(mLayout, "퍼미션이 거부되었습니다. 설정(앱 정보)에서 퍼미션을 허용해야 합니다. ",
-//                            Snackbar.LENGTH_INDEFINITE).setAction("확인", new View.OnClickListener() {
-//
-//                        @Override
-//                        public void onClick(View view) {
-//
-                    //                            finish();
-//                        }
-//                    }).show();
+                    // "다시 묻지 않음"을 사용자가 체크하고 거부를 선택한 경우에는 설정(앱 정보)에서 퍼미션을 허용해야 앱을 사용할 수 있습니다.
                 }
             }
 
@@ -601,37 +570,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onBackPressed() {
-        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) { //메인에서 백 종료시
             super.onBackPressed();
         } else {
-            //백키누르면 무조건 디폴트(메인)나오게 설정함
+            //프래그먼트 생성 후 종료시
             if (System.currentTimeMillis() - time >= 2000) {
                 time = System.currentTimeMillis();
                 getSupportFragmentManager().beginTransaction().remove( dataFragment ).commit();
-
-            } else if (System.currentTimeMillis() - time < 2000) {
+            } else if (System.currentTimeMillis() - time < 2000) { //연속 2번 백키 종료
                 finish();
             }
         }
     }
 
-    @Override
-    public void onBackPressedListener() {
-        Toast.makeText( getApplicationContext(), "토스트", Toast.LENGTH_SHORT ).show();
-        getSupportFragmentManager().popBackStack();
-
-
-    }
 
     @Override
     public void showToast(String msg) {
-        Toast.makeText( getApplicationContext(), msg, Toast.LENGTH_SHORT ).show();
+        Toast.makeText( getApplicationContext(), msg, Toast.LENGTH_LONG ).show();
     }
 
-    @Override
     public void closeFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.popBackStack();
+        fragmentManager.beginTransaction().remove( infoFragment ).commit();
     }
 
     @Override
@@ -705,6 +665,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         infoFragment.setArguments( bundle );
 
+        isInfoFragment=true;
     }
 
     public class MultiThread extends Thread {
