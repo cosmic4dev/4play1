@@ -3,8 +3,6 @@ package cosmic.com.mapprj.view
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -12,11 +10,10 @@ import cosmic.com.mapprj.R
 import cosmic.com.mapprj.contract.LoginContract
 import cosmic.com.mapprj.model.LoginCredentials
 import cosmic.com.mapprj.presenter.LoginPresenter
+import kotlinx.android.synthetic.main.activity_login.*
 
 class LoginActivityKotlin : AppCompatActivity() ,LoginContract.LoginView {
 
-
-    //변수는 사용하기전에 반드시 초기화
      var presenter: LoginPresenter? = null
      var dialog: Dialog?=null
 
@@ -26,23 +23,18 @@ class LoginActivityKotlin : AppCompatActivity() ,LoginContract.LoginView {
 
         presenter = LoginPresenter(this)
 
-        val emailView = findViewById<EditText>(R.id.email_input)
-        val passwordView = findViewById<EditText>(R.id.password_input)
-        val loginButton = findViewById<Button>(R.id.loginBtn)
-
-        loginButton.setOnClickListener {
-            val email = emailView.text.toString()
-            val password = passwordView.text.toString()
-
-            val credentials =LoginCredentials(email,password)
+        loginBtn.setOnClickListener {
+            val email=email_input.text.toString()
+            val password = password_input.text.toString()
+            val credentials=LoginCredentials(email,password)
             presenter!!.start(credentials)
         }
 
-        var pass = findViewById<Button>(R.id.passBtn)
-        pass.setOnClickListener {
-          showProgressbar()
-          onSuccess()
+        passBtn.setOnClickListener {
+            showProgressbar()
+            onSuccess()
         }
+
     }
 
 
@@ -58,7 +50,7 @@ class LoginActivityKotlin : AppCompatActivity() ,LoginContract.LoginView {
     }
 
     override fun hideProgressbar() {
-        dialog!!.dismiss()  //!!은 강제로 not null임을 선언.
+        dialog!!.dismiss()
     }
 
     override fun onSuccess() {

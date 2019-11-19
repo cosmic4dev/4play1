@@ -140,7 +140,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     addToBackStack( null ).commit();
                             break;
                     case R.id.blogItem:
-                        Intent intent = new Intent( MainActivity.this, SearchActivity.class );
+//                        Intent intent = new Intent( MainActivity.this, SearchActivity.class );
+                        Intent intent=new Intent(MainActivity.this,SearchActivity.class);
                         startActivity( intent );
                         break;
                 }
