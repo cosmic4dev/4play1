@@ -36,17 +36,17 @@ class SearchActivity : AppCompatActivity(), SearchContract.view {
         }
 
         presenter = SearchPresenter(this)
-        recyclerView_search.setHasFixedSize(true)
+        recyclerView_search!!.setHasFixedSize(true)
         val layoutManager = LinearLayoutManager(applicationContext, RecyclerView.VERTICAL, false)
-        recyclerView_search.layoutManager = layoutManager
+        recyclerView_search!!.layoutManager = layoutManager
 
     }
 
     private fun searchBlogAction() {
-        val searchWord = inputText.text.toString()
-        if (searchWord == null) {
+        if (inputText == null) {
             showToast("검색어를 입력해주세요.")
         }
+        val searchWord = inputText.text.toString()
         inputText.text = null
         presenter.requestBlogListData(searchWord, application)
         closeKeyboard()
